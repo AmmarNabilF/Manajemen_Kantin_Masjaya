@@ -1,489 +1,779 @@
 #include <iostream>
-#include <cstdlib>
-#include <cmath>
+#include <windows.h>
+#include <thread>
+#include <iomanip>
+#include <limits>
+#include <string>
+#include <sstream>
+#include <ctime>
+#include <math.h>
+#include <climits>
+
 using namespace std;
 
-struct menu{
-    string nama_menu;
+struct dataMenu {
+    string kodeMenu;
+    string namaMenu;
     int harga;
-    int stok;
-    string kategori;
+    dataMenu* next;
 };
 
-struct antrean{
-    string nama;
-    int umur;
+struct pesanan {
+    string idPesanan;
+    string usernamePembeli;
+    string kodeMenu;
     string status;
+    pesanan* next;
 };
 
-struct node {
-    menu makanan;
-    antrean orang;
-    node *next;
-    node *prev;
+struct histori {
+    string idPesanan;
+    string namaPenjual;
+    string kodeMenu;
+    string namaMenu;
+    int jumlah;
+    int harga;
+    int sudahDibayar;
+    string status;
+    histori* next;
 };
 
-node *head = NULL;
-node *last = NULL;
+struct dataUser {
+    string username;
+    string password;
+    string role;
+    string nama;
+    dataMenu* headMenu;
+    dataUser* next;
+    pesanan* queuePesananHead = nullptr;
+    pesanan* queuePesananTail = nullptr;
+    histori* stackHistori = nullptr;
+};
 
-bool kosong() {
-    return head == NULL;
+dataUser* headUser = nullptr;
+int kodeUnikCounter = 1;
+int idunikCounter = 1;
+
+// void splitMenuList(dataMenu* source, dataMenu** frontRef, dataMenu** backRef) {
+//     dataMenu* fast;
+//     dataMenu* slow;
+//     slow = source;
+//     fast = source->next;
+
+//     while (fast != nullptr) {
+//         fast = fast->next;
+//         if (fast != nullptr) {
+//             slow = slow->next;
+//             fast = fast->next;
+//         }
+//     }
+
+//     *frontRef = source;
+//     *backRef = slow->next;
+//     slow->next = nullptr;
+// }
+
+// dataMenu* mergeSortedMenu(dataMenu* a, dataMenu* b) {
+//     dataMenu* result = nullptr;
+
+//     if (a == nullptr)
+//         return b;
+//     else if (b == nullptr)
+//         return a;
+
+//     if (a->harga <= b->harga) {
+//         result = a;
+//         result->next = mergeSortedMenu(a->next, b);
+//     } else {
+//         result = b;
+//         result->next = mergeSortedMenu(a, b->next);
+//     }
+
+//     return result;
+// }
+
+// void mergeSortMenu(dataMenu** headRef) {
+//     if (*headRef == nullptr || (*headRef)->next == nullptr)
+//         return;
+
+//     dataMenu* head = *headRef;
+//     dataMenu* a;
+//     dataMenu* b;
+
+//     splitMenuList(head, &a, &b);
+
+//     mergeSortMenu(&a);
+//     mergeSortMenu(&b);
+
+//     *headRef = mergeSortedMenu(a, b);
+// }
+
+// histori* getTail(histori* curr) {
+//     while (curr && curr->next) {
+//         curr = curr->next;
+//     }
+//     return curr;
+// }
+
+// histori* partition(histori* head, histori* end, histori** newHead, histori** newEnd) {
+//     histori* pivot = end;
+//     histori* prev = nullptr;
+//     histori* curr = head;
+//     histori* tail = pivot;
+
+//     while (curr != pivot) {
+//         if (curr->harga < pivot->harga) {
+//             if ((*newHead) == nullptr) {
+//                 (*newHead) = curr;
+//             }
+//             prev = curr;
+//             curr = curr->next;
+//         } else {
+//             if (prev != nullptr) {
+//                 prev->next = curr->next;
+//             }
+//             histori* temp = curr->next;
+//             curr->next = nullptr;
+//             tail->next = curr;
+//             tail = curr;
+//             curr = temp;
+//         }
+//     }
+
+//     if ((*newHead) == nullptr) {
+//         (*newHead) = pivot;
+//     }
+
+//     (*newEnd) = tail;
+//     return pivot;
+// }
+
+// histori* quickSortRecur(histori* head, histori* end) {
+//     if (!head || head == end)
+//         return head;
+
+//     histori* newHead = nullptr;
+//     histori* newEnd = nullptr;
+
+//     histori* pivot = partition(head, end, &newHead, &newEnd);
+
+//     if (newHead != pivot) {
+//         histori* temp = newHead;
+//         while (temp->next != pivot)
+//             temp = temp->next;
+//         temp->next = nullptr;
+
+//         newHead = quickSortRecur(newHead, temp);
+
+//         temp = getTail(newHead);
+//         temp->next = pivot;
+//     }
+
+//     pivot->next = quickSortRecur(pivot->next, newEnd);
+
+//     return newHead;
+// }
+
+// void quickSortHistori(histori** headRef) {
+//     (*headRef) = quickSortRecur(*headRef, getTail(*headRef));
+// }
+
+bool isUserDataComplete(dataUser* user) {
+    return !user->nama.empty();
 }
 
-// ================================================== FIBONACCI SEARCH AREAS ==================================================
-
-int length(node *head){
-    int count = 0;
-    node *temp = head;
-    while (temp != NULL){
-        count++;
-        temp = temp->next;
-    }
-    return count;
+string generateKodeMenu() {
+    stringstream ss;
+    ss << "M" << kodeUnikCounter++;
+    return ss.str();
+}
+string generateIdPesanan() {
+    stringstream ss;
+    ss << "P" << idunikCounter++;
+    return ss.str();
 }
 
-int min(int x, int y){
-    return (x <= y) ? x : y;
-}
-
-int fibonacciSearch(node *head, int x, int n ){
-    node *temp = head;
-    int fibMMm2 = 0;
-    int fibMMm1 = 1;
-    int fibM = fibMMm2 + fibMMm1;
-    while (fibM < n){
-        fibMMm2 = fibMMm1;
-        fibMMm1 = fibM;
-        fibM = fibMMm2 + fibMMm1;
-    }
-    int offset = -1;
-    while (fibM > 1){
-        int i = min(offset + fibMMm2, n - 1);
-
-        temp = head;
-        for (int j = 0; j < i; j++){
-            if (temp == NULL){
-                break;
+void registrasi(){
+    system("cls");
+    string user, pass, nama;
+    cout << "      SILAHKAN REGISTRASI" << endl;
+    cout << "===============================" << endl;
+    cout << "[1] Register Sebagai Penjual" << endl;
+    cout << "[2] Register Sebagai Pembeli" << endl;
+    cout << "===============================" << endl;
+    cout << "Masukkan pilihan: ";
+    int pilih;
+    cin >> pilih;
+    system("cls");
+    if (pilih == 1){
+        cout << "Username: ";
+        cin >> user;
+        dataUser* data = headUser;
+        while (data) {
+            if (data->username == user) {
+                cout << "Username Telah Dipakai Akun Lain" << endl;
+                return;
             }
-            temp = temp->next;
+            data = data->next;
         }
-        if (temp->makanan.harga < x){
-            fibM = fibMMm1;
-            fibMMm1 = fibMMm2;
-            fibMMm2 = fibM - fibMMm1;
-            offset = i;
-        } else if (temp->makanan.harga > x){
-            fibM = fibMMm2;
-            fibMMm1 = fibMMm1 - fibMMm2;
-            fibMMm2 = fibM - fibMMm1;
+        cin.ignore();
+        cout << "Nama Stand: ";
+        getline(cin, nama);
+        cout << "Password: ";
+        cin >> pass;
+        dataUser* newUser = new dataUser{user, pass, "Penjual", nama, nullptr, nullptr, nullptr, nullptr};
+        if (!headUser) {
+            headUser = newUser;
         } else {
-            return i;
+            data = headUser;
+            while (data->next) {
+                data = data->next;
+            }
+            data->next = newUser;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        Sleep(500);
+    } else if (pilih == 2){
+        cout << "Username: ";
+        cin >> user;
+        dataUser* data = headUser;
+        while (data) {
+            if (data->username == user) {
+                cout << "Username Telah Dipakai Akun Lain" << endl;
+                return;
+            }
+            data = data->next;
+        }
+        cout << "Password: ";
+        cin >> pass;
+        dataUser* newUser = new dataUser{user, pass, "Pembeli", "", nullptr, nullptr, nullptr, nullptr};
+        if (!headUser) {
+            headUser = newUser;
+        } else {
+            data = headUser;
+            while (data->next) {
+                data = data->next;
+            }
+            data->next = newUser;
+        }
+        cout << "Registrasi Berhasil!" << endl;
+        Sleep(500);
+    } else {
+        cout << "Pilihan tidak valid" << endl;
+        Sleep(500);
     }
-    if (fibMMm1 && temp->makanan.harga == x){
-        return offset + 1;
-    }
-    return -1;
 }
 
-// ================================================== JUMP SEARCH AREAS ==================================================
+dataUser* menuLogin(int kesempatan = 3) {
+    if (kesempatan == 0) {
+        cout << "Anda Telah Gagal Login Sebanyak 3 kali. Program berakhir." << endl;
+        exit(0);
+    }
 
-int findNode(node *head, int idx){
-    node *temp = head;
-    for (int i = 0; i < idx; i++){
-        if (temp == NULL){
+    system("cls");
+    string user, pass;
+    cout << "\nLogin Menu\nUsername: ";
+    cin >> user;
+    cout << "Password: ";
+    cin >> pass;
+
+    dataUser* data = headUser;
+    while (data) {
+        if (data->username == user && data->password == pass) {
+            cout << "Login Berhasil :D" << endl;
+            Sleep(500);
+            return data;
+        }
+        data = data->next;
+    }
+
+    cout << "Login Gagal :(" << endl;
+    Sleep(500);
+    return menuLogin(kesempatan - 1);
+}
+
+int inputHarga() {
+    int harga;
+    while (true) {
+        cout << "Masukkan harga untuk menu: Rp";
+        cin >> harga;
+        if (!cin.fail() && harga > 0) {
+            break;
+        } else {
+            cout << "Input tidak valid\nMasukkan harga dalam angka positif\n";
+            cin.clear();
+            cin.ignore(INT_MAX, '\n');
+        }
+    }
+    return harga;
+}
+
+void addMenu(dataUser* user, bool addAwal) {
+    system("cls");
+    string namaMenu;
+    cin.clear();
+    cin.ignore();
+    cout << "\nNama Menu: ";
+    getline(cin, namaMenu);
+
+    int harga = inputHarga();
+    string kodeMenu = generateKodeMenu();
+
+    dataMenu* newMenu = new dataMenu{kodeMenu, namaMenu, harga, nullptr};
+
+    if (addAwal || !user->headMenu) {
+        newMenu->next = user->headMenu;
+        user->headMenu = newMenu;
+    } else {
+        dataMenu* curr = user->headMenu;
+        while (curr->next) {
+            curr = curr->next;
+        }
+        curr->next = newMenu;
+    }
+
+    cout << "Menu berhasil ditambahkan" << (addAwal ? " di awal." : " di akhir.") << endl;
+}
+
+void delMenu(dataUser* user) {
+    system("cls");
+    
+    dataMenu* data = user->headMenu;
+    if (!data) {
+        cout << "Anda belum memiliki menu yang terdaftar." << endl;
+        return;
+    } else {
+        cout << "\nMenu yang terdaftar:\n";
+        while (data) {
+            cout << "- Kode Menu: " << data->kodeMenu << ", Nama Menu: " << data->namaMenu << ", Harga: Rp" << data->harga << endl;
+            data = data->next;
+        }
+    }
+
+    string kode;
+    cout << "Masukkan kode menu yang ingin dihapus: ";
+    cin >> kode;
+
+    dataMenu* curr = user->headMenu;
+    dataMenu* prev = nullptr;
+
+    while (curr) {
+        if (curr->kodeMenu == kode) {
+            if (prev) {
+                prev->next = curr->next;
+            } else {
+                user->headMenu = curr->next;
+            }
+            delete curr;
+            cout << "Menu dengan kode " << kode << " berhasil dihapus." << endl;
+            return;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+
+    cout << "Menu dengan kode " << kode << " tidak ditemukan." << endl;
+}
+
+void buyMenu(dataUser* pembeli, dataMenu* menu, dataUser* penjual, int jumlah) {
+    int totalHarga = menu->harga * jumlah;
+
+    string idUnikPesanan = generateIdPesanan();
+    
+    pesanan* newPesanan = new pesanan{idUnikPesanan, pembeli->username, menu->kodeMenu, "Pending", nullptr};
+    if (!penjual->queuePesananTail) {
+        penjual->queuePesananHead = penjual->queuePesananTail = newPesanan;
+    } else {
+        penjual->queuePesananTail->next = newPesanan;
+        penjual->queuePesananTail = newPesanan;
+    }
+
+    histori* newStackItem = new histori{idUnikPesanan, penjual->nama, menu->kodeMenu, menu->namaMenu, jumlah, menu->harga, 0, "Pending", pembeli->stackHistori};
+    pembeli->stackHistori = newStackItem;
+
+    cout << "Pesanan berhasil ditambahkan ke keranjang!" << endl;
+    Sleep(500);
+}
+
+
+void checkout(dataUser* pembeli) {
+    system("cls");
+    int totalHarga = 0;
+    histori* currentItem = pembeli->stackHistori;
+    while (currentItem) {
+        totalHarga += currentItem->jumlah * currentItem->harga;
+        currentItem = currentItem->next;
+    }
+
+    if (totalHarga == 0) {
+        cout << "Keranjang belanja kosong." << endl;
+        return;
+    }
+
+    cout << "Daftar Pesanan:\n";
+    currentItem = pembeli->stackHistori;
+    while (currentItem) {
+        cout << "Nama Menu: " << currentItem->namaMenu 
+            << " | Jumlah: " << currentItem->jumlah 
+            << " | Harga: Rp" << currentItem->harga 
+            << " | Total: Rp" << currentItem->jumlah * currentItem->harga << endl;
+        currentItem = currentItem->next;
+    }
+    cout << "Total Harga: Rp" << totalHarga << endl;
+
+    int pilihan;
+    cout << "1. Batalkan Pesanan\n2. Lanjutkan Pembayaran\nPilihan: ";
+    cin >> pilihan;
+
+    if (pilihan == 1) {
+        cout << "Pesanan dibatalkan." << endl;
+        return;
+    } else if (pilihan == 2) {
+        currentItem = pembeli->stackHistori;
+        while (currentItem) {
+            currentItem->sudahDibayar = 1;
+            currentItem->status = "Pending";
+            currentItem = currentItem->next;
+        }
+        cout << "Pesanan berhasil! Silakan bayar pesanan ke kasir." << endl;
+    } else {
+        cout << "Pilihan tidak valid." << endl;
+    }
+}
+
+void showMenu() {
+    system("cls");
+    cout << "\n" << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+    cout << setfill('=') << setw(27) << "=" << setfill(' ') << "      Menu Makanan     " << setfill('=') << setw(27) << "=" << setfill(' ') << endl;
+    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+    cout << left << setw(20) << "Nama Penjual" << setw(11) << "Kode Menu" << setw(20) << "Nama Menu" << setw(20) << "Harga" << endl;
+    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+    
+    dataUser* userSekarang = headUser;
+    while (userSekarang) {
+        dataMenu* menu = userSekarang->headMenu;
+        while (menu) {
+            cout << left << setw(20) << userSekarang->nama
+                 << setw(11) << menu->kodeMenu
+                 << setw(20) << menu->namaMenu
+                 << "Rp" << menu->harga << endl;
+            menu = menu->next;
+        }
+        userSekarang = userSekarang->next;
+    }
+    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+}
+
+void showMenuPenjual(dataUser* user) {
+    system("cls");
+    cout << "\n" << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+    cout << setfill('=') << setw(27) << "=" << setfill(' ') << "      Daftar Menu      " << setfill('=') << setw(27) << "=" << setfill(' ') << endl;
+    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+    cout << left << setw(11) << "Kode Menu" << setw(20) << "Nama Menu" << setw(20) << "Harga" << endl;
+    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+    
+    dataMenu* menu = user->headMenu;
+    while (menu) {
+        cout << left << setw(11) << menu->kodeMenu
+             << setw(20) << menu->namaMenu
+             << "Rp" << menu->harga << endl;
+        menu = menu->next;
+    }
+    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+}
+
+void beli(dataUser* currentUser, dataUser* headUser) {
+    while (true) {
+        showMenu();
+        string kodeMenu;
+        int jumlah;
+        cout << "Masukkan kode menu yang ingin dibeli (atau 0 untuk checkout): ";
+        cin >> kodeMenu;
+        
+        if (kodeMenu == "0") {
+            checkout(currentUser);
             break;
         }
-        temp = temp->next;
-    }
-    if (temp == NULL){
-        return 0;
-    }
-    return temp->orang.umur;
-}
 
-int jumpSearch(node *head, int x, int n){
-    
-    int step = sqrt(n);
-    int prev = 0;
-    while (findNode(head, min(step, n) - 1) < x){
-        prev = step;
-        step += sqrt(n);
-        if (prev >= n){
-            return -1;
-        }
-    }
-    while (findNode(head, prev) < x){
-        prev++;
-        if (prev == min(step, n)){
-            return -1;
-        }
-    }
-    if (findNode(head, prev) == x){
-        return prev;
-    }
-    return -1;
-}
+        cout << "Masukkan jumlah yang ingin dibeli: ";
+        cin >> jumlah;
 
-// ================================================== BOYER-MOORE SEARCH AREAS ==================================================
-
-const int NO_OF_CHARS = 256;
-
-void badCharHeuristic(string str, int size, int badChar[NO_OF_CHARS]){
-    for (int i = 0; i < NO_OF_CHARS; i++){
-        badChar[i] = -1;
-    }
-    for (int i = 0; i < size; i++){
-        badChar[(int)str[i]] = i;
-    }
-}
-
-void search(node *head, string pat){
-    int m = pat.size();
-    node *temp = head;
-    while (temp != NULL){
-        int n = temp->makanan.nama_menu.size();
-        int badChar[NO_OF_CHARS];
-        badCharHeuristic(pat, m, badChar);
-        int s = 0;
-        while (s <= (n - m)){
-            int j = m - 1;
-            while (j >= 0 && pat[j] == temp->makanan.nama_menu[s + j]){
-                j--;
-            }
-            if (j < 0){
-                cout << temp->makanan.nama_menu << endl;
-                break;
-            } else {
-                s += max(1, j - badChar[temp->makanan.nama_menu[s + j]]);
-            }
-        }
-        temp = temp->next;
-    }
-}
-
-// ================================================== QUICKSORT AREAS ==================================================
-
-void tukar_menu(node *a, node *b){
-    menu temp = a->makanan;
-    a->makanan = b->makanan;
-    b->makanan = temp;
-}
-
-node *partition_harga(node* low, node* high){
-    int pivot = high->makanan.harga;
-    node *i = low->prev;
-    for (node *j = low; j != high; j = j->next){
-        if (j->makanan.harga < pivot){
-            i = (i == NULL) ? low : i->next;
-            tukar_menu(i, j);
-        }
-    }
-    i = (i == NULL) ? low : i->next;
-    tukar_menu(i, high);
-    return i;
-}
-
-void quickSort_harga(node* low, node* high){
-    if (high != NULL && low != high && low != high->next){
-        node *pi = partition_harga(low, high);
-        quickSort_harga(low, pi->prev);
-        quickSort_harga(pi->next, high);
-    }
-}
-
-// ================================================== SHELLSORT AREAS ==================================================
-
-void tukar_antrean(node *front, node *rear){
-    antrean temp = front->orang;
-    front->orang = rear->orang;
-    rear->orang = temp;
-}
-
-void shellSort_umur(node *front, int n){
-    for (int gap = n/2; gap > 0; gap /= 2){
-        for (node *i = front; i != NULL; i = i->next){
-            for (node *j = i->next; j != NULL; j = j->next){
-                if (i->orang.umur < j->orang.umur){
-                    tukar_antrean(i, j);
+        dataUser* penjual = headUser;
+        dataMenu* menu = nullptr;
+        while (penjual) {
+            menu = penjual->headMenu;
+            while (menu) {
+                if (menu->kodeMenu == kodeMenu) {
+                    break;
                 }
+                menu = menu->next;
             }
+            if (menu) {
+                break;
+            }
+            penjual = penjual->next;
+        }
+
+        if (menu) {
+            buyMenu(currentUser, menu, penjual, jumlah);
+        } else {
+            cout << "Menu dengan kode " << kodeMenu << " tidak ditemukan." << endl;
         }
     }
 }
 
-// ================================================== MAIN AREAS ==================================================
-node* tambah_antrean(){
-    antrean orang;
-    cout << "" << endl;
-    cout << "Masukkan nama : ";
-    getline(cin >> ws, orang.nama);
-    cout << "Masukkan umur : ";
-    cin >> orang.umur;
-    cout << "Masukkan status : ";
-    getline(cin >> ws, orang.status);
+void showPesanan(dataUser* user) {
+    system("cls"); 
+    pesanan* curr = user->queuePesananHead;
+    pesanan* prev = nullptr;
 
-    node *baru = new node;
-    baru->orang = orang;
-    baru->next = NULL;
-    baru->prev = NULL;
-    return baru;
-}
-
-void masuk_antrean(node** front, node** rear){
-    node *baru = tambah_antrean();
-    if (*front == NULL) {
-        *front = baru;
-        *rear = baru;
-    } else {
-        baru->prev = *rear;
-        (*rear)->next = baru;
-        *rear = baru;
-    }
-}
-
-void cancel_antrean(node** front, node** rear){
-    if (*front == NULL) {
-        cout << "Queue Underflow !!" << endl;
+    if (!curr) {
+        cout << "Tidak ada pesanan saat ini" << endl;
         return;
-    } else if ((*front)->next == NULL) {
-        delete *front;
-        *front = NULL;
-        *rear = NULL;
-    } else {
-        node *temp = *front;
-        *front = (*front)->next;
-        (*front)->prev = NULL;
+    }
+
+    cout << "Pesanan Masuk:\n";
+    while (curr) {
+        cout << "ID Pesanan: " << curr->idPesanan << " | Pembeli: " << curr->usernamePembeli << " | Status: " << curr->status << endl;
+
+        int pilihan;
+        cout << "1. Tandai Selesai Pesanan\n2. Batalkan Pesanan\nPilihan: ";
+        cin >> pilihan;
+
+        if (pilihan == 1) {
+            curr->status = "Complete";
+            cout << "Pesanan ditandai selesai!" << endl;
+        } else if (pilihan == 2) {
+            curr->status = "Cancel";
+            cout << "Pesanan ditolak!" << endl;
+        } else {
+            cout << "Pilihan tidak valid." << endl;
+            continue;
+        }
+
+        // Update histori status
+        dataUser* userIter = headUser;
+        while (userIter) {
+            histori* hist = userIter->stackHistori;
+            while (hist) {
+            if (hist->idPesanan == curr->idPesanan) {
+                hist->status = curr->status;
+                hist->sudahDibayar = (pilihan == 1) ? 1 : 2;
+                break;
+            }
+            hist = hist->next;
+            }
+            userIter = userIter->next;
+        }
+
+        // Remove the current pesanan node
+        if (prev) {
+            prev->next = curr->next;
+        } else {
+            user->queuePesananHead = curr->next;
+        }
+        if (curr == user->queuePesananTail) {
+            user->queuePesananTail = prev;
+        }
+        pesanan* temp = curr;
+        curr = curr->next;
         delete temp;
     }
 }
 
-void show(node* front){
-    if (front == NULL) {
-        cout << "Queue Underflow !!" << endl;
-        return;
-    }
-    while (front != NULL) {
-        cout << "" << endl;
-        cout << "Nama : " << front->orang.nama << endl;
-        cout << "Umur : " << front->orang.umur << endl;
-        cout << "Status : " << front->orang.status << endl;
-        front = front->next;
-    }
-}
-
-node* tambah_menu() {
-    cout << "" << endl;
-    node *baru = new node;
-    cout << "Masukkan nama menu : ";
-    getline(cin >> ws, baru->makanan.nama_menu);
-    cout << "Masukkan harga : ";
-    cin >> baru->makanan.harga;
-    cout << "Masukkan stok : ";
-    cin >> baru->makanan.stok;
-    cout << "Masukkan kategori : ";
-    getline(cin >> ws, baru->makanan.kategori);
-    baru->next = NULL;
-    baru->prev = NULL;
-    return baru;
-}
-
-void push_menu(node** top) {
-    node *baru = tambah_menu();
-    if (*top == NULL) {
-        *top = baru;
-    } else {
-        baru->next = *top;
-        (*top)->prev = baru;
-        *top = baru;
-    }
-}
-
-void pop_menu(node** top) {
-    if (*top == NULL) {
-        cout << "Stack Underflow !!" << endl;
-        return;
-    } else if ((*top)->next == NULL) {
-        delete *top;
-        *top = NULL;
-    } else {
-        node *temp = *top;
-        *top = (*top)->next;
-        (*top)->prev = NULL;
-        delete temp;
-    }
-}
-
-void peek_menu(node* top) {
-    if (top == NULL || top->next == NULL) {
-        cout << "Stack Underflow !!" << endl;
-        return;
-    }
-    while (top != NULL) {
-        cout << "" << endl;
-        cout << "Nama menu : " << top->makanan.nama_menu << endl;
-        cout << "Harga : " << top->makanan.harga << endl;
-        cout << "Stok : " << top->makanan.stok << endl;
-        cout << "Kategori : " << top->makanan.kategori << endl;
-        top = top->next;
-
-    }
-}
-
-int hitung_perulangan(node* top){
-    int hitung = 0;
-    while (top != NULL) {
-        hitung++;
-        top = top->next;
-    }
-    return hitung;
-}
-
-int hitung_perulangan2(node* front){
-    int hitung = 0;
-    while (front != NULL) {
-        hitung++;
-        front = front->next;
-    }
-    return hitung;
-}
-
-int main(){
-    int ygdicari, simpannilai, indeks;
-    string pat;
-
-    node *top = NULL;
-    node *front = NULL;
-    node *rear = NULL;
-    int pilihan;
+void showHistory(dataUser* user) {
+    system("cls");
     
+    // quickSortHistori(&user->stackHistori);
 
-        while (true) {
+    histori* curr = user->stackHistori;
 
-            cout << "" << endl;
-            cout << "1. Tambah antrean" << endl;
-            cout << "2. Batal antrean" << endl;
-            cout << "3. Lihat antrean" << endl;
-            cout << "4. Tambah menu" << endl;
-            cout << "5. Hapus menu" << endl;
-            cout << "6. Lihat menu" << endl;
-            cout << "7. Urutkan menu dari harga (asc)" << endl;    
-            cout << "8. Urutkan antrean dari umur (desc)" << endl;
-            cout << "9. Cari harga dari menu yang ada(fibonacci)" << endl;
-            cout << "10.Cari pelanggan dari umur(jump)" << endl;
-            cout << "11.Cari menu dari nama menu (boyer-moore)" << endl;
-            cout << "12.Exit" << endl;
-            cout << "" << endl;
-            cout << "Masukkan pilihan : ";
-            cin >> pilihan;
-
-            switch (pilihan){
-                case 1: 
-                    masuk_antrean(&front, &rear);
-                    break;
-                case 2:
-                    cancel_antrean(&front, &rear);
-                    break;
-                case 3:
-                    show(front);
-                    break;
-                case 4:
-                    push_menu(&top);
-                    break;
-                case 5:
-                    pop_menu(&top);
-                    break;
-                case 6:
-                    peek_menu(top);
-                    break;
-                case 7:
-                {
-                    node* last = top;
-                    while (last->next != NULL) {
-                        last = last->next;
-                    }
-                    quickSort_harga(top, last);
-                    if (top != NULL) {
-                        peek_menu(top);
-                    }
-                    else {
-                        cout << "Tidak ada menu" << endl;
-                    }
-                }                
-                break;
-                case 8:
-                {
-                    int n = hitung_perulangan2(front);
-                    if (n > 0) {
-                        shellSort_umur(front, n);
-                        show(front);
-                    }
-                    else {
-                        cout << "Tidak ada antrean" << endl;
-                    }
-                }
-                break;
-
-                case 9:
-                {   
-                    int n = hitung_perulangan(top);
-                    if (n > 0) {
-                        node *last = top;
-                        while (last->next != NULL) {
-                            last = last->next;
-                        }
-                        cout << "Masukkan harga yang dicari : ";
-                        cin >> ygdicari;
-                        int hasil = fibonacciSearch(top, ygdicari, n);
-                        if (hasil == -1) {
-                            cout << "Data tidak ditemukan" << endl;
-                        }
-                        else {
-                            cout << "Data ditemukan pada indeks ke-" << hasil << endl;
-                        }
-                    }
-                    else {
-                        cout << "Tidak ada menu" << endl;
-                    }
-                }
-                    break;
-
-                case 10:
-                {
-                    int n = hitung_perulangan2(front);
-                    if (n > 0) {
-                        cout << "Masukkan umur yang dicari : ";
-                        cin >> simpannilai;
-                        indeks = jumpSearch(front, simpannilai, n);
-                        if (indeks == -1) {
-                            cout << "Data tidak ditemukan" << endl;
-                        }
-                        else {
-                            cout << "Data ditemukan pada indeks ke-" << indeks << endl;
-                        }
-                    }
-                    else {
-                        cout << "Tidak ada antrean" << endl;
-                    }
-                }
-                    break;
-
-                case 11:
-                {
-                    string pat;
-                    cout << "Masukkan nama menu yang dicari : ";
-                    getline(cin >> ws, pat);
-                    cout << "Menu yang ditemukan : " << endl;
-                    search(top, pat);
-                }
-                    break;
-
-                case 12:
-                    exit(0);
-                    break;
-            }    
+    if (!curr) {
+        cout << "Tidak ada histori pembelian" << endl;
+        return;
     }
 
-    return 0;
+    cout << "Struk Pembelian" << endl;
+    cout << left << setw(18) << "Nama Penjual" 
+         << setw(16) << "Kode Menu" 
+         << setw(20) << "Nama Menu" 
+         << setw(15) << "Jumlah" 
+         << setw(15) << "Harga Satuan" 
+         << setw(15) << "Status" << endl;
+
+    cout << setfill('=') << setw(120) << "=" << setfill(' ') << endl;
+
+    int totalHarga = 0;
+    string currentIdPesanan = "";
+    while (curr) {
+        if (currentIdPesanan != curr->idPesanan) {
+            if (!currentIdPesanan.empty()) {
+                cout << setfill('-') << setw(120) << "=" << setfill(' ') << endl;
+                cout << "Total Harga: " << "Rp" << totalHarga << endl << endl;
+                totalHarga = 0;
+                cout << setfill('=') << setw(120) << "=" << setfill(' ') << endl;
+            }
+            currentIdPesanan = curr->idPesanan;
+            cout << "ID Pesanan: " << currentIdPesanan << endl;
+        }
+
+        int hargaTotalItem = curr->jumlah * curr->harga; 
+        cout << left << setw(18) << curr->namaPenjual
+             << setw(16) << curr->kodeMenu
+             << setw(20) << curr->namaMenu
+             << setw(15) << curr->jumlah
+             << setw(15) << "Rp" << curr->harga
+             << setw(15) << curr->status << endl;
+        totalHarga += hargaTotalItem;
+
+        curr = curr->next;
+    }
+
+    if (!currentIdPesanan.empty()) {
+        cout << setfill('-') << setw(120) << "=" << setfill(' ') << endl;
+        cout << "Total Harga: " << "Rp" << totalHarga << endl;
+        cout << setfill('=') << setw(120) << "=" << setfill(' ') << endl;
+    }
 }
 
+
+void ubahmenu(dataUser* user) {
+    system("cls");
+    dataMenu* data = user->headMenu;
+    if (!data) {
+        cout << "Anda belum memiliki menu yang terdaftar." << endl;
+        return;
+    } else {
+        cout << "\nMenu yang terdaftar:\n";
+        while (data) {
+            cout << "- Kode Menu: " << data->kodeMenu << ", Nama Menu: " << data->namaMenu << ", Harga: Rp" << data->harga << endl;
+            data = data->next;
+        }
+    }
+
+    string kode;
+    cout << "Masukkan kode menu yang ingin diubah: ";
+    cin >> kode;
+
+    dataMenu* curr = user->headMenu;
+    while (curr) {
+        if (curr->kodeMenu == kode) {
+            cout << "Masukkan Nama Menu: ";
+            cin.clear();
+            cin.ignore();
+            getline(cin, curr->namaMenu);
+            curr->harga = inputHarga();
+            cout << "Menu berhasil diubah." << endl;
+            return;
+        }
+        curr = curr->next;
+    }
+
+    cout << "Menu dengan kode " << kode << " tidak ditemukan." << endl;
+}
+
+
+int main() {
+dataUser* penjual1 = new dataUser{"penjual1", "password1", "Penjual", "Stand Penjual 1", nullptr, nullptr, nullptr, nullptr};
+dataUser* penjual2 = new dataUser{"penjual2", "password2", "Penjual", "Stand Penjual 2", nullptr, nullptr, nullptr, nullptr};
+
+dataMenu* menu1 = new dataMenu{"M1001", "Nasi Goreng", 15000, nullptr};
+dataMenu* menu2 = new dataMenu{"M1002", "Mie Goreng", 12000, nullptr};
+dataMenu* menu3 = new dataMenu{"M1003", "Ayam Bakar", 20000, nullptr};
+dataMenu* menu4 = new dataMenu{"M1004", "Sate Ayam", 18000, nullptr};
+
+penjual1->headMenu = menu1;
+menu1->next = menu2;
+
+penjual2->headMenu = menu3;
+menu3->next = menu4;
+
+headUser = penjual1;
+penjual1->next = penjual2;
+
+int pilihan;
+dataUser* currentUser = nullptr;
+    while (true) {
+        system("cls");
+        cout << "1. Registrasi\n2. Login\n3. Keluar\nPilihan: ";
+        cin >> pilihan;
+        switch (pilihan) {
+            case 1:
+                registrasi();
+                break;
+            case 2:
+                currentUser = menuLogin();
+                if (currentUser->role == "Penjual") {
+                    int subPilihanPenjual;
+                    do {
+                        system("cls");
+                        cout << "1. Lihat Menu Anda\n2. Tambah Menu\n3. Ubah Menu\n4. Hapus Menu\n5. Lihat Pesanan\n6. Logout\nPilihan: ";
+                        cin >> subPilihanPenjual;
+
+                        switch (subPilihanPenjual) {
+                            case 1:
+                                showMenuPenjual(currentUser);
+                                break;
+                            case 2:
+                                addMenu(currentUser, false);
+                                break;
+                            case 3:
+                                ubahmenu(currentUser);
+                                break;
+                            case 4:
+                                delMenu(currentUser);
+                                break;
+                            case 5:
+                                showPesanan(currentUser);
+                                break;
+                            case 6:
+                                currentUser = nullptr;
+                                break;
+                            default:
+                                cout << "Pilihan tidak valid." << endl;
+                                break;
+                        }
+                        if (subPilihanPenjual != 6) {
+                            system("pause");
+                        }
+                    } while (subPilihanPenjual != 6);
+                } else if (currentUser->role == "Pembeli") {
+                    int subPilihanPembeli;
+                    do {
+                        system("cls");
+                        cout << "1. Lihat Menu\n2. Beli Menu\n3. Lihat Riwayat Pembelian\n4. Logout\nPilihan: ";
+                        cin >> subPilihanPembeli;
+
+                        switch (subPilihanPembeli) {
+                            case 1:
+                                showMenu();
+                                break;
+                            case 2: {
+                                showMenu();
+                                beli(currentUser, headUser);
+                            }
+                            break;
+                            case 3:
+                                showHistory(currentUser);
+                                break;
+                            case 4:
+                                currentUser = nullptr;
+                                break;
+                            default:
+                                cout << "Pilihan tidak valid." << endl;
+                                break;
+                        }
+                        if (subPilihanPembeli != 4) {
+                            system("pause");
+                        }
+                    } while (subPilihanPembeli != 4);
+                }
+                break;
+            case 3:
+                return 0;
+            default:
+                cout << "Pilihan tidak valid." << endl;
+                break;
+        }
+    }
+}
