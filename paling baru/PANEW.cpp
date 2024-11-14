@@ -223,7 +223,7 @@ void splitMenuList(dataMenu* source, dataMenu** frontRef, dataMenu** backRef) {
     slow->next = nullptr;
 }
 
-dataMenu* mergeSortedMenu(dataMenu* a, dataMenu* b) {
+dataMenu* mergeSortedMenu(dataMenu* a, dataMenu* b, bool kode) {
     dataMenu* result = nullptr;
 
     if (a == nullptr)
@@ -231,18 +231,28 @@ dataMenu* mergeSortedMenu(dataMenu* a, dataMenu* b) {
     else if (b == nullptr)
         return a;
 
-    if (a->harga <= b->harga) {
-        result = a;
-        result->next = mergeSortedMenu(a->next, b);
+    if (kode) {
+        if (a->kodeMenu <= b->kodeMenu) {
+            result = a;
+            result->next = mergeSortedMenu(a->next, b, kode);
+        } else {
+            result = b;
+            result->next = mergeSortedMenu(a, b->next, kode);
+        }
     } else {
-        result = b;
-        result->next = mergeSortedMenu(a, b->next);
+        if (a->harga <= b->harga) {
+            result = a;
+            result->next = mergeSortedMenu(a->next, b, kode);
+        } else {
+            result = b;
+            result->next = mergeSortedMenu(a, b->next, kode);
+        }
     }
 
     return result;
 }
 
-void mergeSort(dataMenu** headRef) {
+void mergeSort(dataMenu** headRef, bool kode) {
     if (*headRef == nullptr || (*headRef)->next == nullptr)
         return;
 
@@ -252,10 +262,10 @@ void mergeSort(dataMenu** headRef) {
 
     splitMenuList(head, &a, &b);
 
-    mergeSort(&a);
-    mergeSort(&b);
+    mergeSort(&a, kode);
+    mergeSort(&b, kode);
 
-    *headRef = mergeSortedMenu(a, b);
+    *headRef = mergeSortedMenu(a, b, kode);
 }
 
 dataMenu* partition(dataMenu* low, dataMenu* high, dataMenu** newLow, dataMenu** newHigh) {
@@ -444,10 +454,18 @@ dataMenu* boyerMooreSearch(dataMenu* head, string pattern) {
     return nullptr;
 }
 
+void mergeSortMenu_kode() {
+    dataUser* user = headUser;
+    while (user) {
+        mergeSort(&(user->headMenu), true);
+        user = user->next;
+    }
+}
+
 void mergeSortMenu() {
     dataUser* user = headUser;
     while (user) {
-        mergeSort(&(user->headMenu));
+        mergeSort(&(user->headMenu), false);
         user = user->next;
     }
 }
@@ -462,7 +480,7 @@ void quickSortMenu() {
 
 void fibonacciSearchMenu() {
     dataUser* user = headUser;
-    quickSortMenu();
+    mergeSortMenu_kode();
     int kodeMenu;
     cout << "Masukkan kode menu yang dicari: ";
     cin >> kodeMenu;
@@ -486,7 +504,7 @@ void fibonacciSearchMenu() {
 
 void jumpSearchMenu() {
     dataUser* user = headUser;
-    quickSortMenu();
+    mergeSortMenu_kode();
     int kodeMenu;
     cout << "Masukkan kode menu yang dicari: ";
     cin >> kodeMenu;
@@ -528,8 +546,6 @@ void boyerMooreSearchMenu() {
         user = user->next;
     }
 }
-
-// ===============================================================
 
 int inputHarga() {
     int harga;
