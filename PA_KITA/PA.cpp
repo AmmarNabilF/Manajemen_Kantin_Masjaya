@@ -54,129 +54,129 @@ dataUser* headUser = nullptr;
 int kodeUnikCounter = 1;
 int idunikCounter = 1;
 
-// void splitMenuList(dataMenu* source, dataMenu** frontRef, dataMenu** backRef) {
-//     dataMenu* fast;
-//     dataMenu* slow;
-//     slow = source;
-//     fast = source->next;
+void splitMenuList(dataMenu* source, dataMenu** frontRef, dataMenu** backRef) {
+    dataMenu* fast;
+    dataMenu* slow;
+    slow = source;
+    fast = source->next;
 
-//     while (fast != nullptr) {
-//         fast = fast->next;
-//         if (fast != nullptr) {
-//             slow = slow->next;
-//             fast = fast->next;
-//         }
-//     }
+    while (fast != nullptr) {
+        fast = fast->next;
+        if (fast != nullptr) {
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
 
-//     *frontRef = source;
-//     *backRef = slow->next;
-//     slow->next = nullptr;
-// }
+    *frontRef = source;
+    *backRef = slow->next;
+    slow->next = nullptr;
+}
 
-// dataMenu* mergeSortedMenu(dataMenu* a, dataMenu* b) {
-//     dataMenu* result = nullptr;
+dataMenu* mergeSortedMenu(dataMenu* a, dataMenu* b) {
+    dataMenu* result = nullptr;
 
-//     if (a == nullptr)
-//         return b;
-//     else if (b == nullptr)
-//         return a;
+    if (a == nullptr)
+        return b;
+    else if (b == nullptr)
+        return a;
 
-//     if (a->harga <= b->harga) {
-//         result = a;
-//         result->next = mergeSortedMenu(a->next, b);
-//     } else {
-//         result = b;
-//         result->next = mergeSortedMenu(a, b->next);
-//     }
+    if (a->harga <= b->harga) {
+        result = a;
+        result->next = mergeSortedMenu(a->next, b);
+    } else {
+        result = b;
+        result->next = mergeSortedMenu(a, b->next);
+    }
 
-//     return result;
-// }
+    return result;
+}
 
-// void mergeSortMenu(dataMenu** headRef) {
-//     if (*headRef == nullptr || (*headRef)->next == nullptr)
-//         return;
+void mergeSortMenu(dataMenu** headRef) {
+    if (*headRef == nullptr || (*headRef)->next == nullptr)
+        return;
 
-//     dataMenu* head = *headRef;
-//     dataMenu* a;
-//     dataMenu* b;
+    dataMenu* head = *headRef;
+    dataMenu* a;
+    dataMenu* b;
 
-//     splitMenuList(head, &a, &b);
+    splitMenuList(head, &a, &b);
 
-//     mergeSortMenu(&a);
-//     mergeSortMenu(&b);
+    mergeSortMenu(&a);
+    mergeSortMenu(&b);
 
-//     *headRef = mergeSortedMenu(a, b);
-// }
+    *headRef = mergeSortedMenu(a, b);
+}
 
-// histori* getTail(histori* curr) {
-//     while (curr && curr->next) {
-//         curr = curr->next;
-//     }
-//     return curr;
-// }
+histori* getTail(histori* curr) {
+    while (curr && curr->next) {
+        curr = curr->next;
+    }
+    return curr;
+}
 
-// histori* partition(histori* head, histori* end, histori** newHead, histori** newEnd) {
-//     histori* pivot = end;
-//     histori* prev = nullptr;
-//     histori* curr = head;
-//     histori* tail = pivot;
+histori* partition(histori* head, histori* end, histori** newHead, histori** newEnd) {
+    histori* pivot = end;
+    histori* prev = nullptr;
+    histori* curr = head;
+    histori* tail = pivot;
 
-//     while (curr != pivot) {
-//         if (curr->harga < pivot->harga) {
-//             if ((*newHead) == nullptr) {
-//                 (*newHead) = curr;
-//             }
-//             prev = curr;
-//             curr = curr->next;
-//         } else {
-//             if (prev != nullptr) {
-//                 prev->next = curr->next;
-//             }
-//             histori* temp = curr->next;
-//             curr->next = nullptr;
-//             tail->next = curr;
-//             tail = curr;
-//             curr = temp;
-//         }
-//     }
+    while (curr != pivot) {
+        if (curr->harga < pivot->harga) {
+            if ((*newHead) == nullptr) {
+                (*newHead) = curr;
+            }
+            prev = curr;
+            curr = curr->next;
+        } else {
+            if (prev != nullptr) {
+                prev->next = curr->next;
+            }
+            histori* temp = curr->next;
+            curr->next = nullptr;
+            tail->next = curr;
+            tail = curr;
+            curr = temp;
+        }
+    }
 
-//     if ((*newHead) == nullptr) {
-//         (*newHead) = pivot;
-//     }
+    if ((*newHead) == nullptr) {
+        (*newHead) = pivot;
+    }
 
-//     (*newEnd) = tail;
-//     return pivot;
-// }
+    (*newEnd) = tail;
+    return pivot;
+}
 
-// histori* quickSortRecur(histori* head, histori* end) {
-//     if (!head || head == end)
-//         return head;
+histori* quickSortRecur(histori* head, histori* end) {
+    if (!head || head == end)
+        return head;
 
-//     histori* newHead = nullptr;
-//     histori* newEnd = nullptr;
+    histori* newHead = nullptr;
+    histori* newEnd = nullptr;
 
-//     histori* pivot = partition(head, end, &newHead, &newEnd);
+    histori* pivot = partition(head, end, &newHead, &newEnd);
 
-//     if (newHead != pivot) {
-//         histori* temp = newHead;
-//         while (temp->next != pivot)
-//             temp = temp->next;
-//         temp->next = nullptr;
+    if (newHead != pivot) {
+        histori* temp = newHead;
+        while (temp->next != pivot)
+            temp = temp->next;
+        temp->next = nullptr;
 
-//         newHead = quickSortRecur(newHead, temp);
+        newHead = quickSortRecur(newHead, temp);
 
-//         temp = getTail(newHead);
-//         temp->next = pivot;
-//     }
+        temp = getTail(newHead);
+        temp->next = pivot;
+    }
 
-//     pivot->next = quickSortRecur(pivot->next, newEnd);
+    pivot->next = quickSortRecur(pivot->next, newEnd);
 
-//     return newHead;
-// }
+    return newHead;
+}
 
-// void quickSortHistori(histori** headRef) {
-//     (*headRef) = quickSortRecur(*headRef, getTail(*headRef));
-// }
+void quickSortHistori(histori** headRef) {
+    (*headRef) = quickSortRecur(*headRef, getTail(*headRef));
+}
 
 bool isUserDataComplete(dataUser* user) {
     return !user->nama.empty();
@@ -264,12 +264,7 @@ void registrasi(){
     }
 }
 
-dataUser* menuLogin(int kesempatan = 3) {
-    if (kesempatan == 0) {
-        cout << "Anda Telah Gagal Login Sebanyak 3 kali. Program berakhir." << endl;
-        exit(0);
-    }
-
+dataUser* menuLogin() {
     system("cls");
     string user, pass;
     cout << "\nLogin Menu\nUsername: ";
@@ -289,7 +284,7 @@ dataUser* menuLogin(int kesempatan = 3) {
 
     cout << "Login Gagal :(" << endl;
     Sleep(500);
-    return menuLogin(kesempatan - 1);
+    return nullptr;
 }
 
 int inputHarga() {
@@ -442,6 +437,7 @@ void checkout(dataUser* pembeli) {
 }
 
 void showMenu() {
+    while (true) {
     system("cls");
     cout << "\n" << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
     cout << setfill('=') << setw(27) << "=" << setfill(' ') << "      Menu Makanan     " << setfill('=') << setw(27) << "=" << setfill(' ') << endl;
@@ -451,7 +447,9 @@ void showMenu() {
     
     dataUser* userSekarang = headUser;
     while (userSekarang) {
+        
         dataMenu* menu = userSekarang->headMenu;
+        
         while (menu) {
             cout << left << setw(20) << userSekarang->nama
                  << setw(11) << menu->kodeMenu
@@ -460,9 +458,30 @@ void showMenu() {
             menu = menu->next;
         }
         userSekarang = userSekarang->next;
+        
     }
-    cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+        cout << setfill('=') << setw(81) << "=" << setfill(' ') << endl;
+        int pilihan;
+        cout << "1. Urutkan Menu Berdasarkan Harga (Merge Sort)\n2. Kembali\nPilihan: ";
+        cin >> pilihan;
+
+        if (pilihan == 1) {
+            dataUser* user = headUser;
+            while (user) {
+            mergeSortMenu(&user->headMenu);
+            user = user->next;
+            }
+            cout << "Menu berhasil diurutkan berdasarkan harga." << endl;
+        } else if (pilihan == 2) {
+            break;
+        } else {
+            cout << "Pilihan tidak valid." << endl;
+        }
+        system("pause");
+    }
 }
+
+
 
 void showMenuPenjual(dataUser* user) {
     system("cls");
@@ -583,8 +602,7 @@ void showPesanan(dataUser* user) {
 
 void showHistory(dataUser* user) {
     system("cls");
-    
-    // quickSortHistori(&user->stackHistori);
+
 
     histori* curr = user->stackHistori;
 

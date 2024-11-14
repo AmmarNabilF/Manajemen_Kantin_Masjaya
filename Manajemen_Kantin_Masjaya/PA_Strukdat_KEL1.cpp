@@ -451,6 +451,7 @@ void showMenu() {
     
     dataUser* userSekarang = headUser;
     while (userSekarang) {
+        mergeSortedMenu(&userSekarang->headMenu);
         dataMenu* menu = userSekarang->headMenu;
         while (menu) {
             cout << left << setw(20) << userSekarang->nama
