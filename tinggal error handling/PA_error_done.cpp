@@ -1038,7 +1038,7 @@ void showPesanan(dataUser* user) {
             while (hist) {
                 if (hist->idPesanan == curr->idPesanan) {
                     hist->status = curr->status;
-                    hist->sudahDibayar = (pilihan == "1") ? "1" : "2";
+                    hist->sudahDibayar = (pilihan == "1") ? 1 : 2;
                 }
                 hist = hist->next;
             }
