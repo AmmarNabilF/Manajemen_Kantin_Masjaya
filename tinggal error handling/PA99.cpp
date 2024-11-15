@@ -135,7 +135,7 @@ void registrasi(){
         cout << "-------------------------------" << endl;
         cout << "Username: ";
         cin.ignore();
-        getline(cin, user);
+        getline(cin >> ws, user);
         check_string_kosong(user, "Username");
         dataUser* data = headUser;
         while (data) {
@@ -149,7 +149,7 @@ void registrasi(){
             data = data->next;
         }
         cout << "Nama Stand: ";
-        getline(cin, nama);
+        getline(cin >> ws, nama);
         check_string_kosong(nama, "Nama Stand");
         data = headUser; 
         while (data) {
@@ -163,7 +163,7 @@ void registrasi(){
             data = data->next;
         }
         cout << "Password: ";
-        cin >> pass;
+        getline(cin >> ws, pass);
         check_string_kosong(pass, "Password");
         dataUser* newUser = new dataUser{user, pass, "Penjual", nama, nullptr, nullptr, nullptr, nullptr};
         if (!headUser) {
@@ -186,7 +186,7 @@ void registrasi(){
         cout << "-------------------------------" << endl;
         cout << "Username: ";
         cin.ignore();
-        getline(cin, user);
+        getline(cin >> ws, user);
         check_string_kosong(user, "Username");
         dataUser* data = headUser;
         while (data) {
@@ -200,7 +200,7 @@ void registrasi(){
             data = data->next;
         }
         cout << "Password: ";
-        cin >> pass;
+        getline(cin >> ws, pass);
         check_string_kosong(pass, "Password");
         dataUser* newUser = new dataUser{user, pass, "Pembeli", "", nullptr, nullptr, nullptr, nullptr};
         if (!headUser) {
@@ -242,9 +242,9 @@ dataUser* menuLogin(int kesempatan = 3) {
     cout << "        SILAHKAN LOGIN" << endl;
     cout << "------------------------------" << endl;
     cout << "Username: ";
-    cin >> user;
+    getline (cin >> ws, user);
     cout << "Password: ";
-    cin >> pass;
+    getline (cin >> ws, pass);
     cout << "===============================" << endl;
     dataUser* data = headUser;
     while (data) {
