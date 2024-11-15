@@ -17,7 +17,6 @@ enum ConsoleColor {
     LIGHTGREEN = 10,
 };
 
-// Fungsi Untuk Mengatur Warna Konsol
 void setConsoleColor(int textColor, int bgColor = BLACK) {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (bgColor << 4) | textColor);
 }
