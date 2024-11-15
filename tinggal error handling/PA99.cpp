@@ -1299,8 +1299,8 @@ void pilihMenu() {
 }
 
 int main() {
-dataUser* penjual1 = new dataUser{"p1", "p1", "Penjual", "Stand Penjual 1", nullptr, nullptr, nullptr, nullptr};
-dataUser* penjual2 = new dataUser{"p2", "p2", "Penjual", "Stand Penjual 2", nullptr, nullptr, nullptr, nullptr};
+dataUser* penjual1 = new dataUser{"ammar", "ammar", "Penjual", "Cak Ammar", nullptr, nullptr, nullptr, nullptr};
+dataUser* penjual2 = new dataUser{"cak", "cak", "Penjual", "Cak Cak", nullptr, nullptr, nullptr, nullptr};
 
 dataMenu* menu1 = new dataMenu{9000, "Nasi Goreng", 15000, nullptr};
 dataMenu* menu2 = new dataMenu{9001, "Mie Goreng", 12000, nullptr};
