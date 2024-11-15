@@ -823,7 +823,7 @@ void checkout(dataUser* pembeli) {
     cout << "Total Harga: Rp" << totalHarga << endl;
     cout << setfill('=') << setw(60) << "=" << setfill(' ') << endl;
 
-    int pilihan;
+    string pilihan;
     cout << "\n===============================" << endl;
     cout << "              AKSI             " << endl;
     cout << "===============================" << endl;
@@ -832,7 +832,7 @@ void checkout(dataUser* pembeli) {
     cout << "===============================" << endl;
     cout << "Masukkan pilihan: ";
     cin >> pilihan;
-    if (pilihan == 1) {
+    if (pilihan == "1") {
         // Hapus semua pesanan dari struk
         while (pembeli->stackStruk) {
             struk* temp = pembeli->stackStruk;
@@ -844,7 +844,7 @@ void checkout(dataUser* pembeli) {
         cout << "Pesanan dibatalkan." << endl << endl;
         setConsoleColor(LIGHTGRAY);
         return;
-    } else if (pilihan == 2) {
+    } else if (pilihan == "2") {
         currentItem = pembeli->stackStruk;
         while (currentItem) {
             histori* newHistoriItem = new histori{
@@ -1001,7 +1001,7 @@ void showPesanan(dataUser* user) {
         cout << left << setw(12) << "Status"    << ": " << curr->status << endl;
         cout << "======================================" << endl;
 
-        int pilihan;
+        string pilihan;
         cout << "\n===============================" << endl;
         cout << "              AKSI             " << endl;
         cout << "===============================" << endl;
@@ -1012,17 +1012,17 @@ void showPesanan(dataUser* user) {
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
 
-        if (pilihan == 1) {
+        if (pilihan == "1") {
             curr->status = "Complete";
             setConsoleColor(LIGHTGREEN);
             cout << "Pesanan ditandai selesai!" << endl;
             setConsoleColor(LIGHTGRAY);
-        } else if (pilihan == 2) {
+        } else if (pilihan == "2") {
             curr->status = "Cancel";
             setConsoleColor(RED);
             cout << "Pesanan ditolak!" << endl;
             setConsoleColor(LIGHTGRAY);
-        } else if (pilihan == 0) {
+        } else if (pilihan == "0") {
             break;
         } else {
             setConsoleColor(RED);
@@ -1219,7 +1219,6 @@ void searchPenjual(dataUser* currentUser) {
 }
 
 void search(dataUser* currentUser) {
-    int pilihan;
     cout << "\n===============================\n";
     cout << "|         MENU SEARCHING      |\n";
     cout << "===============================\n";
