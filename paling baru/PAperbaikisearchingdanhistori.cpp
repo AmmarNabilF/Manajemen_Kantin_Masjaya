@@ -1272,6 +1272,7 @@ dataUser* currentUser = nullptr;
                                 system("cls");
                                 beli(currentUser, headUser);
                                 system("pause");
+                                break;
                             case 3:
                                 showHistory(currentUser);
                                 system("pause");
