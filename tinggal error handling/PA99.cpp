@@ -12,6 +12,7 @@
 using namespace std;
 
 enum ConsoleColor {
+    BLACK = 0,
     RED = 4,
     LIGHTGRAY = 7,
     LIGHTGREEN = 10,
