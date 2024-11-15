@@ -1255,10 +1255,10 @@ void pilihMenu() {
             if (user->role == "Penjual") {
                 if (index == pilihan) {
                     found = true;
-                    showMenuPenjual(user);
-
-                    string aksi;
                     while (true) {
+                        system("cls");
+                        showMenuPenjual(user);
+                        string aksi;
                         cout << "\n==================" << endl;
                         cout << "[1] Urutkan Menu" << endl;
                         cout << "[2] Cari Menu" << endl;
